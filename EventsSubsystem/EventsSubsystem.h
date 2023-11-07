@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Free to use WIP Blueprint Events subsystem, Alessandro Profera 07/11/2023
 
 #pragma once
 
