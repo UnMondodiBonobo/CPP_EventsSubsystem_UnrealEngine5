@@ -1,6 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Free to use WIP Blueprint Events subsystem, Alessandro Profera 07/11/2023
 
-#include "OuterWilds/Subsystem/EventsSubsystem.h"
+#include "EventsSubsystem.h"
 #include <GameplayTagContainer.h>
 
 static TMap<FGameplayTag, TArray<FFunctionBinding>> BindingPairs;
