@@ -72,10 +72,10 @@ bool UEventsSubsystem::Internal_FunctionParamsMatchesEventParams(const UFunction
 	
 }
 
-bool UEventsSubsystem::TryBindFunctionToChannel(FGameplayTag InTag, FName InNotifiedFunctionName, UObject* InNotifiedObject)
+bool UEventsSubsystem::TryBindFunctionToChannel(FGameplayTag InChannelTag, FName InNotifiedFunctionName, UObject* InNotifiedObject)
 {
 	check(InNotifiedObject);
-	if (!Internal_TagValidation(InTag))
+	if (!Internal_TagValidation(InChannelTag))
 	{
 		return false;
 	}
@@ -91,7 +91,7 @@ bool UEventsSubsystem::TryBindFunctionToChannel(FGameplayTag InTag, FName InNoti
 		return false;
 	}
 
-	if (auto* BoundObjects = BindingPairs.Find(InTag))
+	if (auto* BoundObjects = BindingPairs.Find(InChannelTag))
 	{
 		if (!Algo::FindByPredicate(*BoundObjects, [&FoundFunction, &InNotifiedObject](const FFunctionBinding& Binding)
 		{
@@ -108,7 +108,7 @@ bool UEventsSubsystem::TryBindFunctionToChannel(FGameplayTag InTag, FName InNoti
 		}
 		
 #if WITH_EDITOR
-			UE_LOG(LogTemp, Warning, TEXT("Trying to bind a function that is already bound to channel: %s"), *InTag.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Trying to bind a function that is already bound to channel: %s"), *InChannelTag.ToString());
 #endif
 		return false;
 		
@@ -117,16 +117,61 @@ bool UEventsSubsystem::TryBindFunctionToChannel(FGameplayTag InTag, FName InNoti
 	return false;
 }
 
-bool UEventsSubsystem::TryCreateChannelByTag(FGameplayTag InTag)
+bool UEventsSubsystem::TryRemoveFunctionBindingFromChannel(FGameplayTag InChannelTag, FName InboundFunctionName,
+	UObject* InBoundObject)
 {
-	if (!Internal_TagValidation(InTag))
+	if(!Internal_TagValidation(InChannelTag))
 	{
 		return false;
 	}
 
-	if (!BindingPairs.Find(InTag))
+	if (InboundFunctionName.IsNone())
 	{
-		BindingPairs.Emplace(InTag, TArray<FFunctionBinding>{});
+		return false;
+	}
+
+	UFunction* FoundFunction = InBoundObject->FindFunction(InboundFunctionName);
+	if (!FoundFunction)
+	{
+		return false;
+	}
+
+	if (auto* BoundObjects = BindingPairs.Find(InChannelTag))
+	{
+		if (Algo::FindByPredicate(*BoundObjects, [&FoundFunction, &InBoundObject](const FFunctionBinding& Binding)
+		{
+			if (!Binding.IsValid())
+			{
+				return false;
+			}
+
+			return Binding == FFunctionBinding{InBoundObject, FoundFunction};
+		}))
+		{
+			BoundObjects->RemoveSingle({InBoundObject, FoundFunction});
+			return true;
+		}
+		
+#if WITH_EDITOR
+		UE_LOG(LogTemp, Warning, TEXT("Trying to remove function binding tat is not bound to channel: %s"), *InChannelTag.ToString());
+#endif
+		return false;
+		
+	}
+
+	return false;
+}
+
+bool UEventsSubsystem::TryCreateChannelByTag(FGameplayTag InChannelTag)
+{
+	if (!Internal_TagValidation(InChannelTag))
+	{
+		return false;
+	}
+
+	if (!BindingPairs.Find(InChannelTag))
+	{
+		BindingPairs.Emplace(InChannelTag, TArray<FFunctionBinding>{});
 		return true;
 	}
 
@@ -137,14 +182,14 @@ bool UEventsSubsystem::TryCreateChannelByTag(FGameplayTag InTag)
 	
 }
 
-void UEventsSubsystem::BroadcastChannelEventByTag_Params(FGameplayTag InTag, const int32& Params)
+void UEventsSubsystem::BroadcastChannelEventByTag_Params(FGameplayTag InChannelTag, const int32& Params)
 {
 	check(0);
 }
 
-void UEventsSubsystem::BroadcastChannelEventByTag_NoParams(FGameplayTag InTag)
+void UEventsSubsystem::BroadcastChannelEventByTag_NoParams(FGameplayTag InChannelTag)
 {
-	Internal_BroadcastEventByTag(InTag, nullptr, nullptr);
+	Internal_BroadcastEventByTag(InChannelTag, nullptr, nullptr);
 }
 
 void UEventsSubsystem::Initialize(FSubsystemCollectionBase& Collection)

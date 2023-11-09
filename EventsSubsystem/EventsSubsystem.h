@@ -1,4 +1,3 @@
-// Free to use WIP Blueprint Events subsystem, Alessandro Profera 07/11/2023
 
 #pragma once
 
@@ -44,13 +43,15 @@ class OUTERWILDS_API UEventsSubsystem : public UGameInstanceSubsystem
 
 public:
 	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = InNotifiedObject))
-	bool TryBindFunctionToChannel(FGameplayTag InTag, FName InNotifiedFunctionName, UObject* InNotifiedObject);
+	bool TryBindFunctionToChannel(FGameplayTag InChannelTag, FName InNotifiedFunctionName, UObject* InNotifiedObject);
+	UFUNCTION(BlueprintCallable, META = (DefaultToSelf = InBoundObject))
+	bool TryRemoveFunctionBindingFromChannel(FGameplayTag InChannelTag, FName InboundFunctionName, UObject* InBoundObject);
 	UFUNCTION(BlueprintCallable)
-	bool TryCreateChannelByTag(FGameplayTag InTag);
+	bool TryCreateChannelByTag(FGameplayTag InChannelTag);
 	UFUNCTION(BlueprintCallable, CustomThunk,  meta = (CustomStructureParam = "Params"))
-	void BroadcastChannelEventByTag_Params(FGameplayTag InTag, const int32& Params);
+	void BroadcastChannelEventByTag_Params(FGameplayTag InChannelTag, const int32& Params);
 	UFUNCTION(BlueprintCallable)
-	void BroadcastChannelEventByTag_NoParams(FGameplayTag InTag);
+	void BroadcastChannelEventByTag_NoParams(FGameplayTag InChannelTag);
 	
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
