@@ -153,7 +153,7 @@ bool UEventsSubsystem::TryRemoveFunctionBindingFromChannel(FGameplayTag InChanne
 		}
 		
 #if WITH_EDITOR
-		UE_LOG(LogTemp, Warning, TEXT("Trying to remove function binding tat is not bound to channel: %s"), *InChannelTag.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Trying to remove function binding that is not bound to channel: %s"), *InChannelTag.ToString());
 #endif
 		return false;
 		
